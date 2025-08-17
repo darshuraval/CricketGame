@@ -26,6 +26,10 @@ namespace CricketGame
 			
 			match1 = new Match(team1, team2);
 			match1.Play();
+			match1.FinalScoreBoard();
+			Console.WriteLine("FFFFFFFFIIIIIIII NNNNNNNAAAALLLLLLL");
+			Console.WriteLine("Winner is " + match1.WinningTeam);
+			//match1.ScoreBoard(match1.InningsList[1]);
 
 			//match2 = new Match(p.GetTeam(match1.LosingTeam), team3);
 			//match2.Play();
@@ -34,6 +38,8 @@ namespace CricketGame
 			//match3.Play();
 
 			Console.WriteLine("Tournament Finished!");
+			Console.ReadKey();
+			match1.FinalScoreBoard();
 		}
 		public void SetPlayer()
 		{

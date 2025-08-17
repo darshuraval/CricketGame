@@ -81,6 +81,8 @@ namespace CricketGame
 		public int Sixes { get; set; } = 0;
 
 		public double StrikeRate => BallsFaced > 0 ? (Runs * 100.0 / BallsFaced) : 0.0;
+
+		public bool IsOut { get; internal set; }
 	}
 
 	public class BowlingStats

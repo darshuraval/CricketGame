@@ -48,7 +48,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Match.cs" />
-    <Compile Include="MatchHelpers.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

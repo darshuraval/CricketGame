@@ -45,43 +45,46 @@ namespace CricketGame
 
 		private void SetQueue()
 		{
-			if(Batting == Team1.GetTeamName())
+			BattingOrder.Clear();
+			BowlingOrder.Clear();
+
+			if (Batting == Team1.GetTeamName())
 			{
 				foreach (var player in Team1)
-				{
 					BattingOrder.Enqueue(player);
-				}
-				foreach (var player in Team2)
+
+				foreach (var player in Team2) // Ensure all bowlers are enqueued
 				{
 					if (player.Type == PlayerType.Bowler || player.Type == PlayerType.AllRounder)
-					{
 						BowlingOrder.Enqueue(player);
-					}
 				}
-				currentBatman = BattingOrder.Dequeue();
-				secondBatman = BattingOrder.Dequeue();
-				currentBowler = BowlingOrder.Dequeue();
-				BowlingOrder.Enqueue(currentBowler); // Re-queue the bowler for next overs
 			}
 			else
 			{
 				foreach (var player in Team2)
-				{
 					BattingOrder.Enqueue(player);
-				}
+
 				foreach (var player in Team1)
 				{
 					if (player.Type == PlayerType.Bowler || player.Type == PlayerType.AllRounder)
-					{
 						BowlingOrder.Enqueue(player);
-					}
 				}
-				currentBatman = BattingOrder.Dequeue();
-				secondBatman = BattingOrder.Dequeue();
-				currentBowler = BowlingOrder.Dequeue();
-				BowlingOrder.Enqueue(currentBowler); // Re-queue the bowler for next overs
 			}
+
+			// If no "Bowler" or "AllRounder" is found, allow batsmen to bowl
+			if (BowlingOrder.Count == 0)
+			{
+				foreach (var player in (Bowling == Team1.GetTeamName() ? Team1 : Team2))
+					BowlingOrder.Enqueue(player);
+			}
+
+			currentBatman = BattingOrder.Dequeue();
+			secondBatman = BattingOrder.Dequeue();
+
+			currentBowler = BowlingOrder.Dequeue();
+			BowlingOrder.Enqueue(currentBowler);
 		}
+
 
 		void Toss()
 		{
@@ -91,7 +94,8 @@ namespace CricketGame
 				TossWinner = Team1.GetTeamName();
 				Console.WriteLine("Team Won : " + Team1.GetTeamName());
 				Console.Write("Enter Choice 1. Batting, 2. Bowling: ");
-				if (Convert.ToInt16(Console.ReadLine()) == 1)
+				int choice = 1;
+				if (choice == 1)
 				{
 
 					Batting = Team1.GetTeamName();
@@ -108,7 +112,9 @@ namespace CricketGame
 				TossWinner = Team2.GetTeamName();
 				Console.WriteLine("Team Won : " + Team2);
 				Console.Write("Enter Choice 1. Batting, 2. Bowling: ");
-				if (Convert.ToInt16(Console.ReadLine()) == 1)
+				//int choice = Convert.ToInt16(Console.ReadLine());
+				int choice = 1; // Simulating user input for testing
+				if (choice == 1)
 				{
 					Batting = Team2.GetTeamName();
 					Bowling = Team1.GetTeamName();
@@ -140,7 +146,9 @@ namespace CricketGame
 						Ball b = new Ball();
 						Console.WriteLine($"Over {over}, Ball {ball}");
 						Console.Write("Enter Runs (0-7) or -1, -2 for Wicket or 5, 7 for No Ball : ");
-						int runs = Convert.ToInt32(Console.ReadLine());
+						int runs = new Random().Next(-2, 7);
+						Console.ReadKey();
+						//int runs = Convert.ToInt32(Console.ReadLine());
 						if (runs < Rules.MinRunPerBall || runs > Rules.MaxRunPerBall)
 						{
 							Console.WriteLine($"Invalid input! Runs must be between {Rules.MinRunPerBall} and {Rules.MaxRunPerBall}.");
@@ -157,6 +165,7 @@ namespace CricketGame
 						{
 							b.isWicket = true;
 							inning.Wickets++;
+							currentBatman.BattingStats.IsOut = true;
 							currentBowler.BowlingStats.Wickets++;
 							Console.WriteLine($"{currentBatman.Name} is out!");
 
@@ -171,6 +180,7 @@ namespace CricketGame
 								ball--;
 								b.isExtra = true;
 								inning.Extra++;
+								currentBowler.BowlingStats.RunsConceded++; // add extra to bowler
 								Console.WriteLine("No ball! Extra +1 run.");
 							}
 							if(runs == 1 || runs == 3)
@@ -187,11 +197,42 @@ namespace CricketGame
 							b.Runs = 0; // No runs for invalid input
 						}
 						o.Balls.Add(b);
+						currentBatman.BattingStats.Runs = currentBatman.BattingStats.Runs + b.Runs;
 						ScoreBoard(inning);
 					}
 					inning.Overs.Add(o);
+					currentBowler = BowlingOrder.Dequeue();
+					BowlingOrder.Enqueue(currentBowler);
 				}
 				InningsList.Add(inning);
+				// Swap teams for next innings
+
+				TeamName prevBatting = Batting;
+				Batting = Bowling;
+				Bowling = prevBatting;
+				SetQueue();
+
+				Console.WriteLine($"Innings {i + 1} completed. Switching teams for next innings.");
+					Console.WriteLine($"Batting: {Batting}, Bowling: {Bowling}");
+					Console.WriteLine("Press any key to continue to next innings...");
+					Console.ReadKey();
+			}
+
+			//set Winning and Losing Team
+			if (InningsList[0].TotalRuns > InningsList[1].TotalRuns)
+			{
+				WinningTeam = InningsList[0].BattingTeam;
+				LosingTeam = InningsList[1].BattingTeam;
+			}
+			else if (InningsList[0].TotalRuns < InningsList[1].TotalRuns)
+			{
+				WinningTeam = InningsList[1].BattingTeam;
+				LosingTeam = InningsList[0].BattingTeam;
+			}
+			else
+			{
+				WinningTeam = TeamName.None; // Draw
+				LosingTeam = TeamName.None;
 			}
 		}
 
@@ -202,60 +243,61 @@ namespace CricketGame
 			currentBatman = secondBatman;
 			secondBatman = temp;
 		}
-
-		public void ScoreBoard(Innings inning)
+		public void FinalScoreBoard()
 		{
-			Console.WriteLine("\n================== SCOREBOARD ==================");
-			Console.WriteLine($"Batting: {inning.BattingTeam} | Bowling: {inning.BowlingTeam}");
-			Console.WriteLine($"Total Runs: {inning.TotalRuns} | Wickets: {inning.Wickets} | Extras: {inning.Extra}");
-			Console.WriteLine("------------------------------------------------");
-
-			// 🏏 Batsman Stats
-			Console.WriteLine("Batsmen:");
-			var batsmen = inning.Overs
-				.SelectMany(o => o.Balls)
-				.Where(b => b.Batman != null)
-				.GroupBy(b => b.Batman)
-				.Select(g => new
-				{
-					Player = g.Key,
-					Runs = g.Sum(x => x.Runs),
-					Balls = g.Count(x => !x.isExtra),
-					Outs = g.Any(x => x.isWicket)
-				});
-
-			foreach (var batsman in batsmen)
+			foreach (var inning in InningsList)
 			{
-				string status = batsman.Outs ? "OUT" : "NOT OUT";
-				Console.WriteLine($"{batsman.Player.Name,-15} {batsman.Runs} ({batsman.Balls} balls) [{status}]");
+				ScoreBoard(inning, 0);
 			}
-
-			Console.WriteLine("------------------------------------------------");
-
-			// 🎯 Bowler Stats
-			Console.WriteLine("Bowlers:");
-			var bowlers = inning.Overs
-				.SelectMany(o => o.Balls)
-				.Where(b => b.Bowler != null)
-				.GroupBy(b => b.Bowler)
-				.Select(g => new
-				{
-					Player = g.Key,
-					RunsGiven = g.Sum(x => x.Runs),
-					Balls = g.Count(),
-					Wickets = g.Count(x => x.isWicket),
-					Extras = g.Count(x => x.isExtra)
-				});
-
-			foreach (var bowler in bowlers)
-			{
-				double overs = bowler.Balls / 6 + (bowler.Balls % 6) / 10.0;
-				Console.WriteLine($"{bowler.Player.Name,-15} {overs} overs | Runs: {bowler.RunsGiven} | Wkts: {bowler.Wickets} | Extras: {bowler.Extras}");
-			}
-
-			Console.WriteLine("================================================\n");
 		}
+		public void ScoreBoard(Innings inning, int clear = 1)
+		{
+			if(clear == 1) Console.Clear();
+			Console.WriteLine("====================================");
+			Console.WriteLine($"Scoreboard - {inning.BattingTeam}");
+			Console.WriteLine("====================================");
 
+			// Team total
+			int legalBalls = inning.Overs.SelectMany(o => o.Balls).Count(b => !b.isExtra);
+			double oversAsDecimal = legalBalls / 6 + (legalBalls % 6) / 10.0;
+
+			Console.WriteLine($"Total: {inning.TotalRuns}/{inning.Wickets}  ({oversAsDecimal:0.0} overs)");
+			Console.WriteLine($"Extras: {inning.Extra}");
+			Console.WriteLine("------------------------------------");
+
+			// Batting lineup
+			Console.WriteLine("BATTING:");
+			foreach (var player in (inning.BattingTeam == Team1.GetTeamName() ? Team1 : Team2))
+			{
+				string status = player.BattingStats.IsOut ? "OUT" : "NOT OUT";
+				string tempName = player.Name;
+				if (currentBatman == player || currentBowler == player)
+				{
+					tempName += " *";
+				}
+				if (secondBatman == player)
+				{
+					tempName += " **";
+				}
+				Console.WriteLine($"{tempName,-12} {player.BattingStats.Runs} ({player.BattingStats.BallsFaced}) {status}");
+			}
+
+			Console.WriteLine("------------------------------------");
+
+			// Bowling lineup
+			Console.WriteLine("BOWLING:");
+			foreach (var player in (inning.BowlingTeam == Team1.GetTeamName() ? Team1 : Team2))
+			{
+				if (player.BowlingStats.BallsBowled > 0)
+				{
+					double bowlerOvers = player.BowlingStats.BallsBowled / 6 +
+										 (player.BowlingStats.BallsBowled % 6) / 10.0;
+					Console.WriteLine($"{player.Name,-12} {bowlerOvers:0.0} overs, {player.BowlingStats.RunsConceded} runs, {player.BowlingStats.Wickets} wkts");
+				}
+			}
+
+			Console.WriteLine("====================================");
+		}
 	}
 	class Ball
 	{

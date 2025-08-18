@@ -16,9 +16,9 @@ namespace CricketGame
 		{
 			SetPlayer();
 			//PrintAllPlayer();
-			StartMatchAsync();
+			StartMatch();
 		}
-		public async Task StartMatchAsync()
+		public async Task StartMatch()
 		{
 			List<Player> team1 = p.GetTeam(TeamName.Mumbai);
 			List<Player> team2 = p.GetTeam(TeamName.Chennai);
@@ -27,7 +27,7 @@ namespace CricketGame
 			match1 = new Match(team1, team2);
 			match1.Play();
 			match1.FinalScoreBoard();
-			Console.WriteLine("FFFFFFFFIIIIIIII NNNNNNNAAAALLLLLLL");
+			Console.WriteLine("============================ FFFFFFFFIIIIIIIINNNNNNNAAAALLLLLLL ============================");
 			Console.WriteLine("Winner is " + match1.WinningTeam);
 			//match1.ScoreBoard(match1.InningsList[1]);
 

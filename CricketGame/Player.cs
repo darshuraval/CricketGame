@@ -76,21 +76,17 @@ namespace CricketGame
 	public class BattingStats
 	{
 		public int Runs { get; set; } = 0;
-		public int BallsFaced { get; set; } = 0;
+		public int Balls { get; set; } = 0;
 		public int Fours { get; set; } = 0;
 		public int Sixes { get; set; } = 0;
-
-		public double StrikeRate => BallsFaced > 0 ? (Runs * 100.0 / BallsFaced) : 0.0;
 
 		public bool IsOut { get; internal set; }
 	}
 
 	public class BowlingStats
 	{
-		public int BallsBowled { get; set; } = 0;
-		public int RunsConceded { get; set; } = 0;
+		public int Balls { get; set; } = 0;
+		public int RunsExtra { get; set; } = 0;
 		public int Wickets { get; set; } = 0;
-
-		public double Economy => BallsBowled > 0 ? (RunsConceded * 6.0 / BallsBowled) : 0.0;
 	}
 }

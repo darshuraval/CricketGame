@@ -9,7 +9,7 @@ namespace CricketGame
 	internal class Rules
 	{
 		public static int BallLimit { get; set; } = 6;
-		public static int OverLimit { get; set; } = 2; // change to 5
+		public static int OverLimit { get; set; } = 2; // 5
 		public static int MinRunPerBall { get; set; } = -2;
 		public static int MaxRunPerBall { get; set; } = 7;
 		public static int PlayerLimit { get; set; } = 5;

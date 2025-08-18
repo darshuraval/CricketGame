@@ -44,7 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Batman.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Match.cs" />
